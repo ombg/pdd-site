@@ -66,3 +66,24 @@ class PrivateVideoObjApiTests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(len(res.data), 1)
         self.assertEqual(res.data[0]['title'], video.title)
+
+    def test_create_videoobj_successful(self):
+        """Test creating a new video object"""
+        payload = {'title': 'Simple'}
+        self.client.post(VIDEOS_URL, payload)
+
+        exists = VideoObj.objects.filter(
+            user=self.user,
+            title=payload['title']
+        ).exists()
+        self.assertTrue(exists)
+
+    def test_create_videoobj_invalid(self):
+        """Test creating a new video object with invalid payload"""
+        payload1 = {'name': 'Hello again'}
+        payload2 = {'title': ''}
+        res = self.client.post(VIDEOS_URL, payload1)
+
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        res = self.client.post(VIDEOS_URL, payload2)
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)

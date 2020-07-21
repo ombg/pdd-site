@@ -21,5 +21,8 @@ class VideoObjViewSet(viewsets.GenericViewSet,
         return self.queryset.filter(user=self.request.user).order_by('-title')
 
     def perform_create(self, serializer):
-        """Create a new object"""
+        """
+        Create a new video object
+        by overriding CreateModelMixin::perform_create()
+        """
         serializer.save(user=self.request.user)
