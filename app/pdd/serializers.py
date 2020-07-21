@@ -26,3 +26,7 @@ class PddSerializer(serializers.ModelSerializer):
             'id', 'videos', 'timestamp', 'name',
         )
         read_only_fields = ('id',)
+
+
+class PddDetailSerializer(PddSerializer):
+    videos = VideoObjSerializer(many=True, read_only=True)

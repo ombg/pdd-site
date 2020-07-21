@@ -1,3 +1,4 @@
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
@@ -5,22 +6,31 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import Pdd
+from core.models import Pdd, VideoObj
 
-from pdd.serializers import PddSerializer
+from pdd.serializers import PddSerializer, PddDetailSerializer
 
 
 PDD_URL = reverse('pdd:pdd-list')
+
+
+def sample_videoobj(user, title='a video'):
+    """Create and return a sample tag"""
+    return VideoObj.objects.create(user=user, title=title)
+
+
+def detail_url(pdd_id):
+    """Return PDD obj detail URL"""
+    return reverse('pdd:pdd-detail', args=[pdd_id])
 
 
 def sample_pdd_obj(user, **params):
     """Create and return a sample pdd object"""
     defaults = {
         'name': 'Sample PDD object',
-        'timestamp': '2000-01-01 08:00:00-07:00',
+        'timestamp': '2000-01-01T08:00:00-08:00',  # TODO potential bug
     }
     defaults.update(params)
-
     return Pdd.objects.create(user=user, **defaults)
 
 
@@ -75,4 +85,15 @@ class PrivateRecipeApiTests(TestCase):
         serializer = PddSerializer(pdds, many=True)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(len(res.data), 1)
+        self.assertEqual(res.data, serializer.data)
+
+    def test_view_pddobj_detail(self):
+        """Test viewing a recipe detail"""
+        pdd_obj = sample_pdd_obj(user=self.user)
+        pdd_obj.videos.add(sample_videoobj(user=self.user))
+
+        url = detail_url(pdd_obj.id)
+        res = self.client.get(url)
+
+        serializer = PddDetailSerializer(pdd_obj)
         self.assertEqual(res.data, serializer.data)
