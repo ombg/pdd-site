@@ -2,7 +2,7 @@ from rest_framework import viewsets, mixins
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 
-from core.models import VideoObj
+from core.models import VideoObj, Pdd
 
 from pdd import serializers
 
@@ -26,3 +26,15 @@ class VideoObjViewSet(viewsets.GenericViewSet,
         by overriding CreateModelMixin::perform_create()
         """
         serializer.save(user=self.request.user)
+
+
+class PddViewSet(viewsets.ModelViewSet):
+    """Manage PDD objects in the database"""
+    serializer_class = serializers.PddSerializer
+    queryset = Pdd.objects.all()
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        """Retrieve the PDD objects for the authenticated user"""
+        return self.queryset.filter(user=self.request.user)

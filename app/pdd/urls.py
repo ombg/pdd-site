@@ -6,6 +6,7 @@ from pdd import views
 
 router = DefaultRouter()
 router.register('videos', views.VideoObjViewSet)
+router.register('pddobjects', views.PddViewSet)
 
 app_name = 'pdd'
 

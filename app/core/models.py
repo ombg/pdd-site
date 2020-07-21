@@ -52,12 +52,13 @@ class VideoObj(models.Model):
 
 class Pdd(models.Model):
     """PDD object which goes into the database."""
-    name = models.CharField(max_length=255)
-    timestamp = models.DateTimeField()
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE  # Delete video if user is removed.
     )
+    videos = models.ManyToManyField('VideoObj')
+    name = models.CharField(max_length=255)
+    timestamp = models.DateTimeField()
 
     def __str__(self):
         return self.name
