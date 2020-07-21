@@ -39,7 +39,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 class VideoObj(models.Model):
-    """Video which goes into the database."""
+    """Model for a video object"""
     title = models.CharField(max_length=255)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -51,7 +51,7 @@ class VideoObj(models.Model):
 
 
 class Pdd(models.Model):
-    """Video which goes into the database."""
+    """PDD object which goes into the database."""
     name = models.CharField(max_length=255)
     timestamp = models.DateTimeField()
     user = models.ForeignKey(

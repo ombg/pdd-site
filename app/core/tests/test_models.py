@@ -60,7 +60,7 @@ class ModelTests(TestCase):
         pdd = models.Pdd.objects.create(
             user=sample_user(),
             name='Jurassic Park',
-            timestamp='2019-12-25 09:00'
+            timestamp='2019-12-25 09:00:00-07:00'
         )
 
         self.assertEqual(str(pdd), pdd.name)
