@@ -1,7 +1,17 @@
+import uuid
+import os
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, \
                                         PermissionsMixin
 from django.conf import settings
+
+
+def pddobj_video_file_path(instance, filename):
+    """Generate file path for new video file"""
+    ext = filename.split('.')[-1]
+    filename = f'{uuid.uuid4()}.{ext}'
+
+    return os.path.join('uploads/videos/', filename)
 
 
 class UserManager(BaseUserManager):
@@ -45,6 +55,7 @@ class VideoObj(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE  # Delete video if user is removed.
     )
+    videofile = models.FileField(null=True, upload_to=pddobj_video_file_path)
 
     def __str__(self):
         return self.title
