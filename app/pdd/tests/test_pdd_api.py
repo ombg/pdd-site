@@ -206,6 +206,10 @@ class VideoUploadTests(TestCase):
     def test_upload_video_bad_request(self):
         """Test uploading an invalid video"""
         url = video_upload_url(self.pddobj.id)
-        res = self.client.post(url, {'videofile': 'string bug'}, format='multipart')
+        res = self.client.post(
+            url,
+            {'videofile': 'string bug'},
+            format='multipart'
+        )
 
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
