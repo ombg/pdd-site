@@ -1,5 +1,14 @@
+from unittest.mock import patch
 from django.test import TestCase
 from django.contrib.auth import get_user_model
+
+from core import models
+
+
+# Helper function
+def sample_user(email='test@gmail.com', password='testpass'):
+    """Create a sample user"""
+    return get_user_model().objects.create_user(email, password)
 
 
 class ModelTests(TestCase):
@@ -37,3 +46,32 @@ class ModelTests(TestCase):
 
         self.assertTrue(user.is_superuser)
         self.assertTrue(user.is_staff)
+
+    def test_videoobj_str(self):
+        """Test the video object string representation"""
+        videoobj = models.VideoObj.objects.create(
+            user=sample_user(),
+            title='Jurassic Park'
+        )
+
+        self.assertEqual(str(videoobj), videoobj.title)
+
+    def test_pddobj_str(self):
+        """Test the PDD object string representation"""
+        pdd = models.Pdd.objects.create(
+            user=sample_user(),
+            name='Jurassic Park',
+            timestamp='2019-12-25 09:00:00-07:00'
+        )
+
+        self.assertEqual(str(pdd), pdd.name)
+
+    @patch('uuid.uuid4')
+    def test_pddobj_file_name_uuid(self, mock_uuid):
+        """Test that file is saved in the correct location"""
+        uuid = 'test-uuid'
+        mock_uuid.return_value = uuid
+        file_path = models.pddobj_video_file_path(None, 'myvideo.mp4')
+
+        exp_path = f'uploads/videos/{uuid}.mp4'
+        self.assertEqual(file_path, exp_path)
