@@ -1,4 +1,4 @@
-# PDD App
+# PDD App [![Build Status](https://travis-ci.com/ombg/pdd-site.svg?branch=master)](https://travis-ci.com/ombg/pdd-site)
 
 What does it do?
 - It is a REST API to store PDD objects of an authenticated user into a database. 
@@ -54,6 +54,6 @@ Here is a list of the most relevant endpoints. A common usecase would be to foll
 | API root | http://localhost:8000/api/pdd/ |
 | Create video-object | http://localhost:8000/api/pdd/videos/ |
 | Create PDD object | http://localhost:8000/api/pdd/pddobjects/pdd-list/ | 
-| Add video file to existing PDD object | http://localhost:8000/api/pdd/pddobjects/<id>/upload-video/ |
+| Add video file to existing PDD object | http://localhost:8000/api/pdd/pddobjects/1/upload-video/ |
 
 
