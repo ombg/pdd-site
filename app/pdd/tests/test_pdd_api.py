@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
@@ -12,6 +13,7 @@ from pdd.serializers import PddSerializer, PddDetailSerializer
 
 
 PDD_URL = reverse('pdd:pdd-list')
+TEST_DATE = datetime.now(timezone.utc)
 
 
 def sample_videoobj(user, title='a video'):
@@ -28,7 +30,7 @@ def sample_pdd_obj(user, **params):
     """Create and return a sample pdd object"""
     defaults = {
         'name': 'Sample PDD object',
-        'timestamp': '2000-01-01T08:00:00-08:00',  # TODO potential bug
+        'timestamp': TEST_DATE,
     }
     defaults.update(params)
     return Pdd.objects.create(user=user, **defaults)
@@ -97,3 +99,34 @@ class PrivateRecipeApiTests(TestCase):
 
         serializer = PddDetailSerializer(pdd_obj)
         self.assertEqual(res.data, serializer.data)
+
+    def test_create_basic_pddobj(self):
+        """Test creating PDD object"""
+        payload = {
+            'name': 'Test PDD',
+            'timestamp': TEST_DATE,
+        }
+        res = self.client.post(PDD_URL, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        pddobj = Pdd.objects.get(id=res.data['id'])
+        for key in payload.keys():
+            self.assertEqual(payload[key], getattr(pddobj, key))
+
+    def test_create_recipe_with_tags(self):
+        """Test creating a recipe with tags"""
+        video1 = sample_videoobj(user=self.user, title='Video 1')
+        video2 = sample_videoobj(user=self.user, title='Video 2')
+        payload = {
+            'name': 'Test recipe with two videos',
+            'videos': [video1.id, video2.id],
+            'timestamp': TEST_DATE,
+        }
+        res = self.client.post(PDD_URL, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        pddobj = Pdd.objects.get(id=res.data['id'])
+        videos = pddobj.videos.all()
+        self.assertEqual(videos.count(), 2)
+        self.assertIn(video1, videos)
+        self.assertIn(video2, videos)

@@ -45,3 +45,7 @@ class PddViewSet(viewsets.ModelViewSet):
             return serializers.PddDetailSerializer
 
         return self.serializer_class
+
+    def perform_create(self, serializer):
+        """Create a new PDD object"""
+        serializer.save(user=self.request.user)
