@@ -17,7 +17,7 @@ TEST_DATE = datetime.now(timezone.utc)
 
 
 def sample_videoobj(user, title='a video'):
-    """Create and return a sample tag"""
+    """Create and return a sample video object"""
     return VideoObj.objects.create(user=user, title=title)
 
 
@@ -49,7 +49,7 @@ class PublicPddApiTests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
-class PrivateRecipeApiTests(TestCase):
+class PrivatePddApiTests(TestCase):
     """Test authenticated pdd API access"""
 
     def setUp(self):
@@ -90,7 +90,7 @@ class PrivateRecipeApiTests(TestCase):
         self.assertEqual(res.data, serializer.data)
 
     def test_view_pddobj_detail(self):
-        """Test viewing a recipe detail"""
+        """Test viewing a PDD object in detail"""
         pdd_obj = sample_pdd_obj(user=self.user)
         pdd_obj.videos.add(sample_videoobj(user=self.user))
 
@@ -113,12 +113,12 @@ class PrivateRecipeApiTests(TestCase):
         for key in payload.keys():
             self.assertEqual(payload[key], getattr(pddobj, key))
 
-    def test_create_recipe_with_tags(self):
-        """Test creating a recipe with tags"""
+    def test_create_pddobj_with_videos(self):
+        """Test creating a PDD obj with videos"""
         video1 = sample_videoobj(user=self.user, title='Video 1')
         video2 = sample_videoobj(user=self.user, title='Video 2')
         payload = {
-            'name': 'Test recipe with two videos',
+            'name': 'Test PDD obj with two videos',
             'videos': [video1.id, video2.id],
             'timestamp': TEST_DATE,
         }
@@ -130,3 +130,37 @@ class PrivateRecipeApiTests(TestCase):
         self.assertEqual(videos.count(), 2)
         self.assertIn(video1, videos)
         self.assertIn(video2, videos)
+
+    def test_partial_update_pddobj(self):
+        """Test updating a PDD object with patch"""
+        pddobj = sample_pdd_obj(user=self.user)
+        pddobj.videos.add(sample_videoobj(user=self.user))
+        new_vid = sample_videoobj(user=self.user, title='Jurassic Park')
+
+        payload = {'name': 'PDD obj 1', 'videos': [new_vid.id]}
+        url = detail_url(pddobj.id)
+        self.client.patch(url, payload)
+
+        pddobj.refresh_from_db()
+        self.assertEqual(pddobj.name, payload['name'])
+        videos = pddobj.videos.all()
+        self.assertEqual(len(videos), 1)
+        self.assertIn(new_vid, videos)
+
+    def test_full_update_pddobj(self):
+        """Test updating a PDD object with put"""
+        pddobj = sample_pdd_obj(user=self.user)
+        pddobj.videos.add(sample_videoobj(user=self.user))
+
+        payload = {
+                'name': 'PDD video collection',
+                'timestamp': TEST_DATE,
+            }
+        url = detail_url(pddobj.id)
+        self.client.put(url, payload)
+
+        pddobj.refresh_from_db()
+        self.assertEqual(pddobj.name, payload['name'])
+        self.assertEqual(pddobj.timestamp, payload['timestamp'])
+        videos = pddobj.videos.all()
+        self.assertEqual(len(videos), 0)
