@@ -55,7 +55,6 @@ class VideoObj(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE  # Delete video if user is removed.
     )
-    videofile = models.FileField(null=True, upload_to=pddobj_video_file_path)
 
     def __str__(self):
         return self.title
@@ -68,6 +67,7 @@ class Pdd(models.Model):
         on_delete=models.CASCADE  # Delete video if user is removed.
     )
     videos = models.ManyToManyField('VideoObj')
+    videofile = models.FileField(null=True, upload_to=pddobj_video_file_path)
     name = models.CharField(max_length=255)
     timestamp = models.DateTimeField()
 

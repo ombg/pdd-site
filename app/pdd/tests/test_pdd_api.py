@@ -1,5 +1,7 @@
+import os
 from datetime import datetime, timezone
 
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
@@ -19,6 +21,11 @@ TEST_DATE = datetime.now(timezone.utc)
 def sample_videoobj(user, title='a video'):
     """Create and return a sample video object"""
     return VideoObj.objects.create(user=user, title=title)
+
+
+def video_upload_url(pddobj_id):
+    """Return URL for video upload"""
+    return reverse('pdd:pdd-upload-video', args=[pddobj_id])
 
 
 def detail_url(pdd_id):
@@ -164,3 +171,41 @@ class PrivatePddApiTests(TestCase):
         self.assertEqual(pddobj.timestamp, payload['timestamp'])
         videos = pddobj.videos.all()
         self.assertEqual(len(videos), 0)
+
+
+class VideoUploadTests(TestCase):
+
+    def setUp(self):
+        self.client = APIClient()
+        self.user = get_user_model().objects.create_user(
+            'user@gmail.com',
+            'testpass'
+        )
+        self.client.force_authenticate(self.user)
+        self.pddobj = sample_pdd_obj(user=self.user)
+
+    def tearDown(self):
+        # TODO Does this delete the video?
+        self.pddobj.videofile.delete()
+
+    def test_upload_video_to_pddobj(self):
+        """Test uploading the video to the PDD object"""
+        url = video_upload_url(self.pddobj.id)
+        video = SimpleUploadedFile(
+            "file.mp4",
+            b"file_content",
+            content_type="video/mp4"
+        )
+        res = self.client.post(url, {'videofile': video}, format='multipart')
+
+        self.pddobj.refresh_from_db()
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn('videofile', res.data)
+        self.assertTrue(os.path.exists(self.pddobj.videofile.path))
+
+    def test_upload_video_bad_request(self):
+        """Test uploading an invalid video"""
+        url = video_upload_url(self.pddobj.id)
+        res = self.client.post(url, {'videofile': 'string bug'}, format='multipart')
+
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)

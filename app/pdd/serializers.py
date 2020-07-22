@@ -30,3 +30,14 @@ class PddSerializer(serializers.ModelSerializer):
 
 class PddDetailSerializer(PddSerializer):
     videos = VideoObjSerializer(many=True, read_only=True)
+
+
+class PddVideoSerializer(serializers.ModelSerializer):
+    """Serializer for uploading video to PDD object"""
+
+    class Meta:
+        model = Pdd
+        fields = (
+            'id', 'videofile',
+        )
+        read_only_fields = ('id',)
